@@ -34,19 +34,13 @@ function preload() {
     
 }
 
-//var image;
-var hump1;
-var hump2;
-var hump3;
-var hump4;
 
 
 
 
 function create() {
 
-    // start the phaser.io arcade physics!!!
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+    
 
     // capture user input (player controls)
     cursors = game.input.keyboard.createCursorKeys();
@@ -54,30 +48,46 @@ function create() {
     // create the sprite objects and enable physics for them
     star = game.add.sprite(400, 200, 'star');
     player = game.add.sprite(400, 200, 'player');
-    game.physics.enable([player,star], Phaser.Physics.ARCADE);
+    blackhole = game.add.sprite(10, 200, 'blackhole'); // make the blackhole
+    var walk = blackhole.animations.add('spin'); // add default anim for blackhole
+    blackhole.animations.play('spin', 20, true); // start blackhole anim @ 30fps
+
+    // start the phaser.io arcade physics!!!
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.enable([player,star,blackhole], Phaser.Physics.ARCADE);
+    
+    // specify physics for sprites
     player.body.immovable = true;
+    blackhole.body.immovable = true; 
+
 
     // gets the star moving at the beginning of the game
     star.body.velocity.setTo(200, 200);
 
-    // make the game world bounce-able
+    // make the star bounce off the walls
     star.body.collideWorldBounds = true;
+    // make the player collide with walls
+    //player.body.collideWorldBounds = true; //disabled because less fun
 
     // sets the image bounce energy for the horizontal 
     //  and vertical vectors (as an x,y point). "1" is 100% energy return
     star.body.bounce.setTo(1, 1);
 
-    // make the blackhole
-    var blackhole = game.add.sprite(10, 200, 'blackhole');
-    var walk = blackhole.animations.add('spin'); // add default animation for blackhole
-    blackhole.animations.play('spin', 20, true); // start the blackhole animation @ 30fps
+    
 
 
-    // make it so sounds happen on collide
+
+
+    // make it so sounds happen on player collide
     player.body.onCollide = new Phaser.Signal();
     player.body.onCollide.add(playerHump, this);
+    
 
+    // make it so game ends if blackhole gets hit by player
+    blackhole.body.onCollide = new Phaser.Signal();
+    blackhole.body.onCollide.add(endGame, this);
 
+    // make it so game ends if blackhole gets hit by star
 
 
 
@@ -89,8 +99,10 @@ function create() {
 //  Move the player with the arrow keys
 function update () {
 
-    //  Enable physics between the player and the star
+    //  Enable physics between the sprites
     game.physics.arcade.collide(player, star);
+    game.physics.arcade.collide(player, blackhole);
+    game.physics.arcade.collide(star, blackhole);
 
     if (cursors.up.isDown)
     {
@@ -122,16 +134,36 @@ function render () {
 
 }
 
-// game specific non-phaser.io functions
+
+
+// ---------------------------------------------
+// game specific, non-phaser.io functions below
 
 function playerHump () {
 
     
-    humpRand = Math.floor(Math.random() * 7) + 1; //get random 1-7
-    hump = game.add.audio('hump'+humpRand);
+    var humpRand = Math.floor(Math.random() * 7) + 1; //get random 1-7
+    var hump = game.add.audio('hump'+humpRand);
     hump.pause(); // stop anything that was playing before
     hump.play();
-    console.log(humpRand);
+
+}
+
+function endGame (sprite1, sprite2) {
+
+    console.log("sprite1: " + sprite1)
+    console.log("sprite2: " + sprite2)
+    if (sprite2.key == "star") {
+        console.log("blackhole collision with star -- game won");
+    } else if (sprite2.key == "player") {
+        console.log("blackhole collision with player -- game lost");
+    } else {
+        console.log("blackhole collision with unknown sprite -- IMPOSSIBLE")
+    }
+
+    //console.log("endGame");
+    //var blackholeSound = game.add.audio('blackholefart');
+    //blackholeSound.play();
 
 }
 
