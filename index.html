@@ -30,7 +30,7 @@ function preload() {
     game.load.audio('hump5', 'assets/sounds/hump5.mp3');
     game.load.audio('hump6', 'assets/sounds/hump6.mp3');
     game.load.audio('hump7', 'assets/sounds/hump7.mp3');
-    game.load.audio('blackholefart', 'assets/sounds/blackholefart.mp3');
+    game.load.audio('capturestar', 'assets/sounds/capturestar.mp3');
     
 }
 
@@ -39,8 +39,6 @@ function preload() {
 
 
 function create() {
-
-    
 
     // capture user input (player controls)
     cursors = game.input.keyboard.createCursorKeys();
@@ -73,37 +71,28 @@ function create() {
     //  and vertical vectors (as an x,y point). "1" is 100% energy return
     star.body.bounce.setTo(1, 1);
 
-    
 
-
-
-
-    // make it so sounds happen on player collide
+    // make collision event so sounds happen on player collide
     player.body.onCollide = new Phaser.Signal();
     player.body.onCollide.add(playerHump, this);
     
 
-    // make it so game ends if blackhole gets hit by player
+    // make collision event so game ends if blackhole gets hit by player or star
     blackhole.body.onCollide = new Phaser.Signal();
     blackhole.body.onCollide.add(endGame, this);
-
-    // make it so game ends if blackhole gets hit by star
-
-
 
 }
 
 
-
-
-//  Move the player with the arrow keys
 function update () {
 
-    //  Enable physics between the sprites
+    // enable physics between the sprites
     game.physics.arcade.collide(player, star);
     game.physics.arcade.collide(player, blackhole);
     game.physics.arcade.collide(star, blackhole);
 
+
+    // move the player around the screen with arrow keys
     if (cursors.up.isDown)
     {
         player.body.velocity.y = -300;
@@ -134,26 +123,25 @@ function render () {
 
 }
 
-
-
 // ---------------------------------------------
 // game specific, non-phaser.io functions below
 
 function playerHump () {
 
-    
-    var humpRand = Math.floor(Math.random() * 7) + 1; //get random 1-7
+    // get a random hump sound
+    var humpRand = Math.floor(Math.random() * 7) + 1; //random 1-7
     var hump = game.add.audio('hump'+humpRand);
-    hump.pause(); // stop anything that was playing before
+    hump.pause(); // stop prior hump sounds, so humps don't overlap as much
     hump.play();
 
 }
 
 function endGame (sprite1, sprite2) {
 
-    console.log("sprite1: " + sprite1)
-    console.log("sprite2: " + sprite2)
     if (sprite2.key == "star") {
+        // play blackhole-capturing-star sound
+        var blackholeSound = game.add.audio('capturestar');
+        blackholeSound.play();
         console.log("blackhole collision with star -- game won");
     } else if (sprite2.key == "player") {
         console.log("blackhole collision with player -- game lost");
@@ -162,8 +150,7 @@ function endGame (sprite1, sprite2) {
     }
 
     //console.log("endGame");
-    //var blackholeSound = game.add.audio('blackholefart');
-    //blackholeSound.play();
+    
 
 }
 
