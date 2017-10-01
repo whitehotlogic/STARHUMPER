@@ -47,34 +47,11 @@ function create() {
     star = game.add.sprite(400, 200, 'star');
     player = game.add.sprite(400, 200, 'player');
 
-/*    OLD BLACKHOLES CODE
-
-    // create blackholes group
-
-    //  The platforms group contains the ground and the 2 ledges we can jump on
-    blackholes = game.add.group();
-
-    //  We will enable physics for any object that is created in this group
-    blackholes.enableBody = true;
-
-
-    //  Now let's create two blackholes
-    var blackhole = blackholes.create(10, 200, 'blackhole');
-    blackhole.body.immovable = true;
-    blackhole.animations.add('spin'); // add default anim for blackhole
-    blackhole.animations.play('spin', 20, true); // start blackhole anim @ 30fps
-    // blackhole 2
-    blackhole = blackholes.create(10, 400, 'blackhole');
-    blackhole.body.immovable = true;
-    blackhole.animations.add('spin'); // add default anim for blackhole
-    blackhole.animations.play('spin', 20, true); // start blackhole anim @ 30fps
-*/
-
-    // create 5 blackholes
+    // create 5 blackholes for start of game
     blackholes = game.add.physicsGroup(Phaser.Physics.ARCADE);
     for (var i = 0; i < 5; i++)
     {
-        var s = blackholes.create(game.rnd.integerInRange(100, 700), game.rnd.integerInRange(32, 200), 'blackhole');
+        var s = blackholes.create(game.rnd.integerInRange(100, 700), game.rnd.integerInRange(32, 500), 'blackhole');
         s.animations.add('spin');
         s.play('spin', 20, true);
         //s.body.velocity.set(game.rnd.integerInRange(-200, 200), game.rnd.integerInRange(-200, 200));
@@ -181,7 +158,12 @@ function endGame (sprite1, sprite2) {
         // play blackhole-capturing-star sound
         var blackholeSound = game.add.audio('capturestar');
         blackholeSound.play();
-        console.log("blackhole collision with star -- game won");
+        console.log("blackhole collision with star -- spawn new blackhole");
+        // create new blackhole
+        var s = blackholes.create(game.rnd.integerInRange(100, 700), game.rnd.integerInRange(32, 500), 'blackhole');
+        s.animations.add('spin');
+        s.play('spin', 20, true);
+        s.body.immovable = true;
     } else if (sprite1.key == "player") {
         console.log("blackhole collision with player -- game lost");
     } else {
