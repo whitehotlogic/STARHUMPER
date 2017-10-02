@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <title>StarHump</title>
+    <title>StarHumper</title>
     <script src="//cdn.jsdelivr.net/phaser/2.6.1/phaser.min.js"></script>
     <style type="text/css">
         body {
@@ -14,7 +14,7 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'StarHump', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'StarHumper', { preload: preload, create: create, update: update, render: render });
 
 function preload() {
 
@@ -36,6 +36,11 @@ function preload() {
 
 
 var blackholes;
+var scoreTimer;
+var humpTimer;
+var score = 0;
+var deathIn = 5000;
+var endGame = false;
 
 
 function create() {
@@ -57,16 +62,8 @@ function create() {
         var s = blackholes.create(game.rnd.integerInRange(100, 750), game.rnd.integerInRange(32, 550), 'blackhole');
         s.animations.add('spin');
         s.play('spin', 20, true);
-        //s.body.velocity.set(game.rnd.integerInRange(-200, 200), game.rnd.integerInRange(-200, 200));
     }
-
-    //blackholes.setAll('body.collideWorldBounds', true);
     blackholes.setAll('body.immovable', true);
-    //blackholes.setAll('body.onCollide', "(endGame, this)");
-
-
-
-
 
     // start the phaser.io arcade physics!!!
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -74,8 +71,6 @@ function create() {
     
     // specify physics for sprites
     player.body.immovable = true;
-    //blackhole.body.immovable = true; 
-
 
     // gets the star moving at the beginning of the game
     star.body.velocity.setTo(200, 200);
@@ -85,54 +80,62 @@ function create() {
     // make the player collide with walls
     //player.body.collideWorldBounds = true; //disabled because less fun
 
-    // sets the image bounce energy for the horizontal 
-    //  and vertical vectors (as an x,y point). "1" is 100% energy return
+    // sets the image bounce energy for x,y (1 is 100%)
     star.body.bounce.setTo(1, 1);
-
 
     // make collision event so sounds happen on player collide with star
     player.body.onCollide = new Phaser.Signal();
-    player.body.onCollide.add(playerHump, this);
-    
+    player.body.onCollide.add(starHump, this);
 
-    // make collision event so game reacts if blackhole gets hit by player or star
-    //blackholes.body.onCollide = new Phaser.Signal();
-    //blackholes.body.onCollide.add(endGame, this);
+    // create a timer for the score
+    scoreTimer = game.time.create(false);
+    scoreTimer.loop(1, updateTimers, this);
+    scoreTimer.start();
+
+    // create a timer for the hump death
+    humpTimer = game.time.create(false);
+    humpTimer.loop(5000, updateTimers, this);
+    humpTimer.start();
 
 }
 
 
 function update () {
 
-    // enable physics between the sprites
-    game.physics.arcade.collide(player, star);
-    //game.physics.arcade.collide(player, blackholes);
-    game.physics.arcade.collide(star, blackholes, endGame);
-    game.physics.arcade.collide(player, blackholes, endGame);
 
+    if (endGame) {
+        scoreTimer.stop();
+        return 0;
+    } else { // game. on.
+        // enable physics between the sprites
+        game.physics.arcade.collide(player, star);
+        //game.physics.arcade.collide(player, blackholes);
+        game.physics.arcade.collide(star, blackholes, doCollide);
+        game.physics.arcade.collide(player, blackholes, doCollide);
 
-    // move the player around the screen with arrow keys
-    if (cursors.up.isDown)
-    {
-        player.body.velocity.y = -300;
-    }
-    else if (cursors.down.isDown)
-    {
-        player.body.velocity.y =  300;
-    }
-    else if (cursors.left.isDown)
-    {
-        player.body.velocity.x = -300;
-        player.animations.play('left');
-    }
-    else if (cursors.right.isDown)
-    {
-        player.body.velocity.x = 300;
-        player.animations.play('right');
-    } 
-    else
-    {
-        player.body.velocity.setTo(0, 0);
+        // move the player around the screen with arrow keys
+        if (cursors.up.isDown)
+        {
+            player.body.velocity.y = -300;
+        }
+        else if (cursors.down.isDown)
+        {
+            player.body.velocity.y =  300;
+        }
+        else if (cursors.left.isDown)
+        {
+            player.body.velocity.x = -300;
+            player.animations.play('left');
+        }
+        else if (cursors.right.isDown)
+        {
+            player.body.velocity.x = 300;
+            player.animations.play('right');
+        } 
+        else
+        {
+            player.body.velocity.setTo(0, 0); // maybe change to make more spacey (no full stop)
+        }
     }
     
 }
@@ -140,46 +143,67 @@ function update () {
 function render () {
 
     //debug helper
-    game.debug.spriteInfo(star, 32, 32);
+    //game.debug.spriteInfo(star, 32, 32);
+    game.debug.text('Score: ' + score, 32, 32);
+    //game.debug.text('Death in: ' + humpTimer.duration.toFixed(0), 32, 64);
+    game.debug.text('Death in: ' + (deathIn/1000), 32, 64);
+
+    // show GAME OVER
+    if (endGame) {
+        game.debug.text("GAME OVER", 375, 300);
+    }
+
 
 }
 
 // ---------------------------------------------
 // game specific, non-phaser.io functions below
 
-function playerHump () {
+function starHump () {
 
     // get a random hump sound
     var humpRand = Math.floor(Math.random() * 7) + 1; //random 1-7
+    //var humpRand = game.rnd.integerInRange(1, 7); //a better way to do this
     var hump = game.add.audio('hump'+humpRand);
     hump.pause(); // stop prior hump sounds, so humps don't overlap as much
     hump.play();
 
+    // reset deathIn timer
+    deathIn = 5000;
+
 }
 
-function endGame (sprite1, sprite2) {
+function doCollide (sprite1, sprite2) {
 
     if (sprite1.key == "star") {
-        // play blackhole-capturing-star sound
+        // play blackhole spawning sound
         var blackholeSound = game.add.audio('capturestar');
         blackholeSound.play();
         console.log("blackhole collision with star -- spawn new blackhole");
         // create new blackhole
-        var s = blackholes.create(game.rnd.integerInRange(100, 700), game.rnd.integerInRange(32, 500), 'blackhole');
+        var s = blackholes.create(game.rnd.integerInRange(32, 700), game.rnd.integerInRange(32, 500), 'blackhole');
         s.animations.add('spin');
         s.play('spin', 20, true);
         s.body.immovable = true;
     } else if (sprite1.key == "player") {
         console.log("blackhole collision with player -- game lost");
+        //score -= 10;  // instadeath on blackhole collision is more fun
 
+        //END THE GAME
+        endGame = true;
     } else {
         console.log("blackhole collision with unknown sprite -- IMPOSSIBLE")
     }
 
-    //console.log("endGame");
-    
+}
+
+function updateTimers() {
+
+    score++;
+    deathIn--;
 
 }
+
 
 </script>
 
