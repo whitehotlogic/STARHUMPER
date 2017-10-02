@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
     <meta charset="UTF-8" />
-    <title>StarHumper</title>
+    <title>STARHUMPER</title>
     <script src="//cdn.jsdelivr.net/phaser/2.6.1/phaser.min.js"></script>
     <style type="text/css">
         body {
@@ -14,7 +14,7 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'StarHumper', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'STARHUMPER', { preload: preload, create: create, update: update, render: render });
 
 function preload() {
 
@@ -39,7 +39,7 @@ var blackholes;
 var scoreTimer;
 var humpTimer;
 var score = 0;
-var deathIn = 5000;
+var deathIn = 500;
 var endGame = false;
 
 
@@ -78,7 +78,7 @@ function create() {
     // make the star bounce off the walls
     star.body.collideWorldBounds = true;
     // make the player collide with walls
-    //player.body.collideWorldBounds = true; //disabled because less fun
+    player.body.collideWorldBounds = true; //disabled because less fun
 
     // sets the image bounce energy for x,y (1 is 100%)
     star.body.bounce.setTo(1, 1);
@@ -94,7 +94,7 @@ function create() {
 
     // create a timer for the hump death
     humpTimer = game.time.create(false);
-    humpTimer.loop(5000, updateTimers, this);
+    humpTimer.loop(10, updateTimers, this);
     humpTimer.start();
 
 }
@@ -102,9 +102,12 @@ function create() {
 
 function update () {
 
-
+    if (deathIn <= 0) {
+        endGame = true;
+    }
     if (endGame) {
         scoreTimer.stop();
+        humpTimer.stop();
         return 0;
     } else { // game. on.
         // enable physics between the sprites
@@ -146,7 +149,7 @@ function render () {
     //game.debug.spriteInfo(star, 32, 32);
     game.debug.text('Score: ' + score, 32, 32);
     //game.debug.text('Death in: ' + humpTimer.duration.toFixed(0), 32, 64);
-    game.debug.text('Death in: ' + (deathIn/1000), 32, 64);
+    game.debug.text('Death in: ' + (deathIn/100), 32, 64);
 
     // show GAME OVER
     if (endGame) {
@@ -169,7 +172,7 @@ function starHump () {
     hump.play();
 
     // reset deathIn timer
-    deathIn = 5000;
+    deathIn = 500;
 
 }
 
@@ -206,6 +209,9 @@ function updateTimers() {
 
 
 </script>
-
+STARHUMPER<br />
+    1) hump the star to stay alive <br />
+    2) don't touch the black holes <br />
+    3) don't let the star touch the black holes <br />
 </body>
 </html>
