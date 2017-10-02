@@ -37,7 +37,6 @@ function preload() {
     
 }
 
-
 var blackholes;
 var scoreTimer;
 var humpTimer;
@@ -47,9 +46,7 @@ var endGame = false;
 var endSound = false;
 var animTimeout = 0;
 
-
 function create() {
-
 
     // ---- CONFIGURE SPRITES ----
 
@@ -73,7 +70,7 @@ function create() {
     star.body.collideWorldBounds = true; // make the star bounce off the walls
     //player.body.collideWorldBounds = true; // make the player collide with walls
                                              //    disabled because less fun
-    star.body.bounce.setTo(1); // sets the image bounce energy for x,y (1 is 100%)
+    star.body.bounce.setTo(1.03); // sets the image bounce energy for x,y (1 is 100%)
     //star.body.setCircle(10); // make star a circle --- disabled because collisions
     //  with circles are known to glitch out on the arcade physics engine
 
@@ -131,7 +128,6 @@ function create() {
 
 }
 
-
 function update () {
 
     if (deathIn <= 0) { // check hump death timer
@@ -155,28 +151,28 @@ function update () {
 
         // move the player around the screen with arrow keys
         if (cursors.up.isDown) {
-            if (this.shiftKey.isDown) {
+            if (this.shiftKey.isDown) { // downshift player speed
                 player.body.velocity.y = -150;
             } else {
                 player.body.velocity.y = -300;
             }
         }
         else if (cursors.down.isDown) {
-            if (this.shiftKey.isDown) {
-                player.body.velocity.y =  150;
+            if (this.shiftKey.isDown) { // downshift player speed
+                player.body.velocity.y = 150;
             } else {
-                player.body.velocity.y =  300;
+                player.body.velocity.y = 300;
             }
         }
         else if (cursors.left.isDown) {
-            if (this.shiftKey.isDown) {
+            if (this.shiftKey.isDown) { // downshift player speed
                 player.body.velocity.x = -150;
             } else {
                 player.body.velocity.x = -300;
             }
         }
         else if (cursors.right.isDown) {
-            if (this.shiftKey.isDown) {
+            if (this.shiftKey.isDown) { // downshift player speed
                 player.body.velocity.x = 150;
             } else {
                 player.body.velocity.x = 300;
@@ -202,7 +198,6 @@ function render () {
         game.debug.text("GAME OVER", 370, 300);
     }
 
-
 }
 
 function starHump () {
@@ -221,8 +216,7 @@ function starHump () {
         player.animations.play('humpleft');
     }
 
-    // reset deathIn timer
-    deathIn = 1000;
+    deathIn = 1000; // reset deathIn timer
 
 }
 
@@ -259,10 +253,9 @@ function updateTimers() {
 
 }
 
-
 </script>
 STARHUMPER<br />
-    1) hump star or die <br />
-    2) black holes are bad <br />
+1) hump stars or die <br />
+2) black holes are bad <br />
 </body>
 </html>
