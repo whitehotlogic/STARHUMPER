@@ -31,6 +31,8 @@ function preload() {
     game.load.audio('hump6', 'assets/sounds/hump6.mp3');
     game.load.audio('hump7', 'assets/sounds/hump7.mp3');
     game.load.audio('capturestar', 'assets/sounds/capturestar.mp3');
+    game.load.audio('titletrack', 'assets/sounds/titletrack.mp3');
+    game.load.audio('gameover', 'assets/sounds/gameover.mp3');
     
 }
 
@@ -41,6 +43,7 @@ var humpTimer;
 var score = 0;
 var deathIn = 1000;
 var endGame = false;
+var endSound = false;
 
 
 function create() {
@@ -97,6 +100,10 @@ function create() {
     humpTimer.loop(10, updateTimers, this);
     humpTimer.start();
 
+    // title track
+    var titleTrack = game.add.audio('titletrack');
+    titleTrack.play();
+
 }
 
 
@@ -108,6 +115,12 @@ function update () {
     if (endGame) {
         scoreTimer.stop();
         humpTimer.stop();
+        if (!endSound) {
+            // game over soundbyte
+            var gameOver = game.add.audio('gameover');
+            gameOver.play();
+            endSound = true;
+        }
         return 0;
     } else { // game. on.
         // enable physics between the sprites
