@@ -3,7 +3,7 @@
 <head> 
     <meta charset="UTF-8" />
     <title>STARHUMPER</title>
-    <script src="//cdn.jsdelivr.net/phaser/2.6.1/phaser.min.js"></script>
+    <script src="vendor/phaser.min.js">//version 2.8.8</script> 
     <style type="text/css">
         body {
             margin: 0;
@@ -65,11 +65,14 @@ function create() {
     blackholes = game.add.physicsGroup(Phaser.Physics.ARCADE);
     for (var i = 0; i < 3; i++)
     {
-        var s = blackholes.create(game.rnd.integerInRange(100, 750), game.rnd.integerInRange(32, 550), 'blackhole');
+        var s = blackholes.create(game.rnd.integerInRange(100, 770), game.rnd.integerInRange(32, 570), 'blackhole');
         s.animations.add('spin');
         s.play('spin', 20, true);
+        s.body.setSize(40,40);
+        s.body.bounce.set(2);
     }
     blackholes.setAll('body.immovable', true);
+
 
     // start the phaser.io arcade physics!!!
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -87,11 +90,14 @@ function create() {
     //player.body.collideWorldBounds = true; //disabled because less fun
 
     // sets the image bounce energy for x,y (1 is 100%)
-    star.body.bounce.setTo(1, 1);
+    star.body.bounce.setTo(1);
+    //star.body.setCircle(10); // make star a circle --- disabled because collisions
+    //  with circles are known to glitch out on the arcade physics engine
 
     // make collision event so sounds happen on player collide with star
     player.body.onCollide = new Phaser.Signal();
     player.body.onCollide.add(starHump, this);
+    player.body.bounce.set(1);
 
     // create a timer for the score
     scoreTimer = game.time.create(false);
@@ -213,6 +219,8 @@ function doCollide (sprite1, sprite2) {
         s.animations.add('spin');
         s.play('spin', 20, true);
         s.body.immovable = true;
+        s.body.setSize(40,40);
+        s.body.bounce.set(2);
     } else if (sprite1.key == "player") {
         console.log("blackhole collision with player -- game lost");
         //score -= 10;  // instadeath on blackhole collision is more fun
