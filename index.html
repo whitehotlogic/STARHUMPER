@@ -55,7 +55,7 @@ function create() {
     player.animations.add('left', [0], 10, true);
     player.animations.add('right', [5], 10, true);
 
-    // create 3 blackholes for start of game
+    // create some blackholes for start of game
     blackholes = game.add.physicsGroup(Phaser.Physics.ARCADE);
     for (var i = 0; i < 3; i++)
     {
@@ -78,7 +78,7 @@ function create() {
     // make the star bounce off the walls
     star.body.collideWorldBounds = true;
     // make the player collide with walls
-    player.body.collideWorldBounds = true; //disabled because less fun
+    //player.body.collideWorldBounds = true; //disabled because less fun
 
     // sets the image bounce energy for x,y (1 is 100%)
     star.body.bounce.setTo(1, 1);
@@ -153,14 +153,11 @@ function render () {
 
     // show GAME OVER
     if (endGame) {
-        game.debug.text("GAME OVER", 375, 300);
+        game.debug.text("GAME OVER", 370, 300);
     }
 
 
 }
-
-// ---------------------------------------------
-// game specific, non-phaser.io functions below
 
 function starHump () {
 
@@ -210,8 +207,8 @@ function updateTimers() {
 
 </script>
 STARHUMPER<br />
-    1) hump the star to stay alive <br />
-    2) don't touch the black holes <br />
-    3) don't let the star touch the black holes <br />
+    1) hump star or die <br />
+    2) don't touch black holes <br />
+    3) don't let star near black holes <br />
 </body>
 </html>
