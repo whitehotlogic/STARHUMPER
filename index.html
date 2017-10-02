@@ -136,6 +136,7 @@ function update () {
     if (endGame) { // check to see if player collided with black hole
         scoreTimer.stop();
         humpTimer.stop();
+        star.body.bounce.setTo(1); // reset star bounce factor to 1 for aftergame
         if (!endSound) {
             // game over soundbyte
             var gameOver = game.add.audio('gameover');
@@ -254,8 +255,24 @@ function updateTimers() {
 }
 
 </script>
-STARHUMPER<br />
+<small>
+<table>
+<tr>
+<td style="padding-right: 70px;">
+<b>STARHUMPER</b><br />
 1) hump stars or die <br />
-2) black holes are bad <br />
+2) black holes are bad
+</td>
+<td style="padding-right: 70px;">
+    Game Rules: <br />
+    - new black hole spawns on star collision <br />
+    - death countdown timer is 10 seconds, resets with starhump
+</td>
+<td>
+     Player Controls: <br />
+     - arrow keys move player <br />
+     - holding shift button reduces speed
+ </td>
+</small>
 </body>
 </html>
