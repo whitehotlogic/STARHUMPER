@@ -87,7 +87,7 @@ function create() {
     // --- TIMERS ----
 
     scoreTimer = game.time.create(false); // create a timer for score
-    scoreTimer.loop(1, updateTimers, this);
+    scoreTimer.loop(1000, updateTimers, this);
     scoreTimer.start();
 
     humpTimer = game.time.create(false); // create a timer for hump death
@@ -95,7 +95,7 @@ function create() {
     humpTimer.start();
 
     cometTimer = game.time.create(false); // create a timer for bonus comet
-    cometTimer.loop(game.rnd.integerInRange(3000, 3000), fireComet, this);
+    cometTimer.loop(game.rnd.integerInRange(3000, 5000), fireComet, this);
     cometTimer.start();
 
 
@@ -275,7 +275,7 @@ function doCollide (sprite1, sprite2) {
     } else if (sprite1.key == "player" && sprite2.key == "comet") {
         //BONUS COMET COLLISION
         console.log("player collision with comet");
-        score = score + 2500;
+        score = score + 500;
         var bonusSound = game.add.audio('bonus');
         bonusSound.play();
         comet.kill();
