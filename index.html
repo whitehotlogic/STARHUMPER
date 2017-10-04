@@ -36,12 +36,11 @@ function preload() {
     game.load.audio('capturestar', 'assets/sounds/capturestar.mp3');
     game.load.audio('titletrack', 'assets/sounds/titletrack.mp3');
     game.load.audio('gameover', 'assets/sounds/gameover.mp3');
-    
+    game.load.audio('bonus', 'assets/sounds/bonus.mp3');
 }
 
 
 var blackholes;
-//var comets;
 var comet;
 var scoreTimer;
 var humpTimer;
@@ -59,14 +58,15 @@ function create() {
     game.add.tileSprite(0, 0, 800, 600,'background');
     star = game.add.sprite(400, 200, 'star');
     player = game.add.sprite(400, 200, 'player');
-
+    comet = game.add.sprite(0, 0, 'comet'); // hidden on start
     
     // create animations for sprites
     player.animations.add('left', [1], 10, true);
     player.animations.add('right', [2], 10, true);
     player.animations.add('humpleft', [0, 1], 5, false);
     player.animations.add('humpright', [3, 2], 5, false);
-
+    comet.animations.add('flyRight', [0,1,2,3,4], 20, true);
+    comet.animations.add('flyLeft', [5,6,7,8,9], 20, true);
 
 
     // ---- PHYSICS CONFIGURATION ----
@@ -129,12 +129,10 @@ function create() {
         blackhole.play('spin', 20, true);
         blackhole.body.setSize(40,40);
         blackhole.body.bounce.set(2);
+        blackhole.body.immovable = true;
     }
-    blackholes.setAll('body.immovable', true);
-
-    // create comet and hide it
-    comet = game.add.sprite(game.rnd.integerInRange(0, 600), game.rnd.integerInRange(0, 800), 'comet');
-    comet.kill();
+    
+    comet.kill(); // hide bonus comet
 
     var titleTrack = game.add.audio('titletrack'); // play title track audio
     titleTrack.play();
@@ -236,21 +234,18 @@ function doHump () {
 
 function fireComet () {
 
-    //comet.visible = false;
-    
-    //if (comet.alive)
-    //{
-    //    comet.kill();
-    //}
-    //var comet = comets.create(game.rnd.integerInRange(100, 770), game.rnd.integerInRange(32, 570), 'comet');
     comet.reset(game.rnd.integerInRange(0, 800), game.rnd.integerInRange(0, 600));
-   // comet.visible = true;
     game.physics.enable([player,comet], Phaser.Physics.ARCADE);
-    comet.animations.add('animate');
-    comet.play('animate', 20, true);
-    //comet.body.bounce.setTo(1.5); // doesn't work, never bounces
-    comet.body.velocity.setTo(game.rnd.integerInRange(-300, 300), game.rnd.integerInRange(-300, 300));
-    //comet.body.immovable = true; // doesn't work, never bounces
+
+    var cometXVelocity = game.rnd.integerInRange(-300, 300);
+    var cometYVelocity = game.rnd.integerInRange(-300, 300);
+    comet.body.velocity.setTo(cometXVelocity, cometYVelocity);
+
+    if (cometXVelocity <= 0) {
+        comet.play('flyLeft', 20, true);
+    } else {
+        comet.play('flyRight', 20, true);
+    }
 
 }
 
@@ -278,10 +273,11 @@ function doCollide (sprite1, sprite2) {
         //END THE GAME
         endGame = true;
     } else if (sprite1.key == "player" && sprite2.key == "comet") {
+        //BONUS COMET COLLISION
         console.log("player collision with comet");
-        doHump();
         score = score + 2500;
-        //comet.visible = false;;
+        var bonusSound = game.add.audio('bonus');
+        bonusSound.play();
         comet.kill();
     } else {
         console.log("blackhole collision with unknown sprite -- IMPOSSIBLE")
@@ -303,17 +299,20 @@ function updateTimers() {
 <td style="padding-right: 70px;">
 <b>STARHUMPER</b><br />
 1) hump stars or die <br />
-2) black holes are bad
+2) black holes are bad <br />
+3) comets are bonus
 </td>
 <td style="padding-right: 70px;">
     Game Rules: <br />
-    - new black hole spawns on star collision <br />
-    - death countdown timer is 10 seconds, resets with starhump
+    - black hole spawns on star collision <br />
+    - death timer is 10 seconds <br/>
+    - death timer resets on starhump
 </td>
 <td>
      Player Controls: <br />
      - arrow keys move player <br />
-     - holding shift button reduces speed
+     - shift button reduces speed <br />
+     - hint: star can be slowed down ;)
  </td>
 </small>
 </body>
