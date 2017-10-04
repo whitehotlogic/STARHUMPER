@@ -23,6 +23,8 @@ function preload() {
     game.load.image('star', 'assets/star.png');
     game.load.image('background', 'assets/background.jpg');
     game.load.spritesheet('blackhole', 'assets/blackhole.png', 50, 50);
+    game.load.spritesheet('comet', 'assets/comet.png', 100, 25);
+
     // load sounds
     game.load.audio('hump1', 'assets/sounds/hump1.mp3');
     game.load.audio('hump2', 'assets/sounds/hump2.mp3');
@@ -37,7 +39,10 @@ function preload() {
     
 }
 
+
 var blackholes;
+//var comets;
+var comet;
 var scoreTimer;
 var humpTimer;
 var score = 0;
@@ -54,16 +59,20 @@ function create() {
     game.add.tileSprite(0, 0, 800, 600,'background');
     star = game.add.sprite(400, 200, 'star');
     player = game.add.sprite(400, 200, 'player');
+
     
-    // create animations for player sprite
+    // create animations for sprites
     player.animations.add('left', [1], 10, true);
     player.animations.add('right', [2], 10, true);
     player.animations.add('humpleft', [0, 1], 5, false);
     player.animations.add('humpright', [3, 2], 5, false);
 
+
+
     // ---- PHYSICS CONFIGURATION ----
     
     blackholes = game.add.physicsGroup(Phaser.Physics.ARCADE);
+    //comets = game.add.physicsGroup(Phaser.Physics.ARCADE);
     game.physics.startSystem(Phaser.Physics.ARCADE); // start the phaser.io arcade physics!!!
     game.physics.enable([player,star,blackholes], Phaser.Physics.ARCADE);
     player.body.immovable = true; // make sure player doesn't bounce off things
@@ -73,10 +82,6 @@ function create() {
     star.body.bounce.setTo(1.03); // sets the image bounce energy for x,y (1 is 100%)
     //star.body.setCircle(10); // make star a circle --- disabled because collisions
     //  with circles are known to glitch out on the arcade physics engine
-
-    // make collision event for player
-    player.body.onCollide = new Phaser.Signal(); 
-    player.body.onCollide.add(starHump, this); 
     player.body.bounce.set(1);
 
     // --- TIMERS ----
@@ -88,6 +93,10 @@ function create() {
     humpTimer = game.time.create(false); // create a timer for hump death
     humpTimer.loop(10, updateTimers, this);
     humpTimer.start();
+
+    cometTimer = game.time.create(false); // create a timer for bonus comet
+    cometTimer.loop(game.rnd.integerInRange(3000, 3000), fireComet, this);
+    cometTimer.start();
 
 
     // --- KEYBOARD CAPTURE ----
@@ -115,13 +124,17 @@ function create() {
 
     for (var i = 0; i < 3; i++) // create some blackholes for start of game
     {
-        var s = blackholes.create(game.rnd.integerInRange(100, 770), game.rnd.integerInRange(32, 570), 'blackhole');
-        s.animations.add('spin');
-        s.play('spin', 20, true);
-        s.body.setSize(40,40);
-        s.body.bounce.set(2);
+        var blackhole = blackholes.create(game.rnd.integerInRange(100, 770), game.rnd.integerInRange(32, 570), 'blackhole');
+        blackhole.animations.add('spin');
+        blackhole.play('spin', 20, true);
+        blackhole.body.setSize(40,40);
+        blackhole.body.bounce.set(2);
     }
     blackholes.setAll('body.immovable', true);
+
+    // create comet and hide it
+    comet = game.add.sprite(game.rnd.integerInRange(0, 600), game.rnd.integerInRange(0, 800), 'comet');
+    comet.kill();
 
     var titleTrack = game.add.audio('titletrack'); // play title track audio
     titleTrack.play();
@@ -146,9 +159,11 @@ function update () {
         return 0;
     } else { // game. is. on.
         
-        game.physics.arcade.collide(player, star); // player can collide with star
+        game.physics.arcade.collide(player, star, doCollide); // player can collide with star
         game.physics.arcade.collide(star, blackholes, doCollide); // star can collide with blackholes
         game.physics.arcade.collide(player, blackholes, doCollide); // player can collide with blackholes
+        game.physics.arcade.collide(player, comet, doCollide); // player can collide with comet
+        // TRY COMET COLLIDE HERE??? or maybe more fun as immortal object
 
         // move the player around the screen with arrow keys
         if (cursors.up.isDown) {
@@ -201,7 +216,7 @@ function render () {
 
 }
 
-function starHump () {
+function doHump () {
 
     // get a random hump sound
     var humpRand = Math.floor(Math.random() * 7) + 1; //random 1-7
@@ -217,30 +232,57 @@ function starHump () {
         player.animations.play('humpleft');
     }
 
-    deathIn = 1000; // reset deathIn timer
+}
+
+function fireComet () {
+
+    //comet.visible = false;
+    
+    //if (comet.alive)
+    //{
+    //    comet.kill();
+    //}
+    //var comet = comets.create(game.rnd.integerInRange(100, 770), game.rnd.integerInRange(32, 570), 'comet');
+    comet.reset(game.rnd.integerInRange(0, 800), game.rnd.integerInRange(0, 600));
+   // comet.visible = true;
+    game.physics.enable([player,comet], Phaser.Physics.ARCADE);
+    comet.animations.add('animate');
+    comet.play('animate', 20, true);
+    //comet.body.bounce.setTo(1.5); // doesn't work, never bounces
+    comet.body.velocity.setTo(game.rnd.integerInRange(-300, 300), game.rnd.integerInRange(-300, 300));
+    //comet.body.immovable = true; // doesn't work, never bounces
 
 }
 
 function doCollide (sprite1, sprite2) {
 
-    if (sprite1.key == "star") {
+    if (sprite1.key == "player" && sprite2.key == "star") {
+        doHump();
+        deathIn = 1000; // reset deathIn timer
+    } else if (sprite1.key == "star" && sprite2.key == "blackhole") {
         // play blackhole spawning sound
         var blackholeSound = game.add.audio('capturestar');
         blackholeSound.play();
         console.log("blackhole collision with star -- spawn new blackhole");
         // create new blackhole
-        var s = blackholes.create(game.rnd.integerInRange(32, 700), game.rnd.integerInRange(32, 500), 'blackhole');
-        s.animations.add('spin');
-        s.play('spin', 20, true);
-        s.body.immovable = true;
-        s.body.setSize(40,40);
-        s.body.bounce.set(2);
-    } else if (sprite1.key == "player") {
+        var blackhole = blackholes.create(game.rnd.integerInRange(32, 700), game.rnd.integerInRange(32, 500), 'blackhole');
+        blackhole.animations.add('spin');
+        blackhole.play('spin', 20, true);
+        blackhole.body.immovable = true;
+        blackhole.body.setSize(40,40);
+        blackhole.body.bounce.set(2);
+    } else if (sprite1.key == "player" && sprite2.key == "blackhole") {
         console.log("blackhole collision with player -- game lost");
         //score -= 10;  // instadeath on blackhole collision is more fun
 
         //END THE GAME
         endGame = true;
+    } else if (sprite1.key == "player" && sprite2.key == "comet") {
+        console.log("player collision with comet");
+        doHump();
+        score = score + 2500;
+        //comet.visible = false;;
+        comet.kill();
     } else {
         console.log("blackhole collision with unknown sprite -- IMPOSSIBLE")
     }
